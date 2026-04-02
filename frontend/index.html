@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APIForge — Generate APIs from Plain English</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafaf9;
+      --surface: #ffffff;
+      --border: rgba(0,0,0,0.08);
+      --text: #0f0f0f;
+      --muted: #6b7280;
+      --accent: #6366f1;
+      --accent2: #8b5cf6;
+      --accent3: #06b6d4;
+      --green: #10b981;
+      --orange: #f59e0b;
+      --red: #ef4444;
+      --gradient: linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* Navbar */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(250,250,249,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 1.3rem;
+      font-weight: 800;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-link {
+      padding: 0.45rem 1rem;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .nav-link:hover { background: rgba(99,102,241,0.06); color: var(--accent); }
+
+    .nav-cta {
+      padding: 0.5rem 1.2rem;
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.2s;
+      margin-left: 0.5rem;
+    }
+
+    .nav-cta:hover { background: var(--accent2); transform: translateY(-1px); }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 500px;
+      background: radial-gradient(ellipse, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.08) 40%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      background: rgba(99,102,241,0.08);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 2rem;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: blink 1.5s ease infinite;
+    }
+
+    .hero-title {
+      font-size: 4rem;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s ease 0.1s both;
+      max-width: 800px;
+    }
+
+    .hero-title .gradient {
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 1.15rem;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 560px;
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.6s ease 0.2s both;
+      font-weight: 400;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 4rem;
+      animation: fadeUp 0.6s ease 0.3s both;
+    }
+
+    .btn-primary {
+      padding: 0.85rem 2rem;
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover { background: var(--accent2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,0.3); }
+
+    .btn-secondary {
+      padding: 0.85rem 2rem;
+      background: transparent;
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-secondary:hover { border-color: rgba(99,102,241,0.3); color: var(--accent); transform: translateY(-2px); }
+
+    /* Demo preview */
+    .hero-demo {
+      width: 100%;
+      max-width: 800px;
+      background: #1e1e2e;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.15);
+      animation: fadeUp 0.6s ease 0.4s both;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .demo-bar {
+      background: #2a2a3e;
+      padding: 0.75rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .demo-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .demo-dot.r { background: #ff5f57; }
+    .demo-dot.y { background: #febc2e; }
+    .demo-dot.g { background: #28c840; }
+
+    .demo-title { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-left: 0.5rem; font-family: 'JetBrains Mono', monospace; }
+
+    .demo-content { padding: 1.5rem; text-align: left; }
+
+    .demo-line { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.8; }
+    .demo-line .kw { color: #c792ea; }
+    .demo-line .fn { color: #82aaff; }
+    .demo-line .str { color: #c3e88d; }
+    .demo-line .cm { color: #546e7a; }
+    .demo-line .dec { color: #ffcb6b; }
+
+    /* Stats */
+    .stats-bar {
+      display: flex;
+      gap: 3rem;
+      justify-content: center;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      animation: fadeUp 0.6s ease 0.5s both;
+    }
+
+    .stat { text-align: center; }
+    .stat-num { font-size: 2rem; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.02em; }
+    .stat-label { font-size: 0.82rem; color: var(--muted); margin-top: 0.2rem; }
+
+    /* Features */
+    .features {
+      max-width: 1200px;
+      margin: 6rem auto;
+      padding: 0 2rem;
+    }
+
+    .section-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.8rem;
+      text-align: center;
+    }
+
+    .section-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+      font-size: 1rem;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 4rem;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.8rem;
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); border-color: rgba(99,102,241,0.2); }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .feature-icon.purple { background: rgba(99,102,241,0.1); }
+    .feature-icon.cyan { background: rgba(6,182,212,0.1); }
+    .feature-icon.green { background: rgba(16,185,129,0.1); }
+    .feature-icon.orange { background: rgba(245,158,11,0.1); }
+    .feature-icon.pink { background: rgba(236,72,153,0.1); }
+    .feature-icon.blue { background: rgba(59,130,246,0.1); }
+
+    .feature-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .feature-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+
+    /* How it works */
+    .how {
+      background: #0f0f1a;
+      color: white;
+      padding: 6rem 2rem;
+    }
+
+    .how-inner { max-width: 1200px; margin: 0 auto; }
+    .how .section-label { color: #818cf8; }
+    .how .section-title { color: white; }
+    .how .section-subtitle { color: rgba(255,255,255,0.5); }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      margin-top: 4rem;
+    }
+
+    .step {
+      text-align: center;
+      padding: 2rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+    }
+
+    .step-num {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: white;
+      margin: 0 auto 1.2rem;
+    }
+
+    .step-title { font-size: 1rem; font-weight: 700; color: white; margin-bottom: 0.5rem; }
+    .step-desc { font-size: 0.85rem; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+    /* Languages */
+    .languages {
+      max-width: 1200px;
+      margin: 6rem auto;
+      padding: 0 2rem;
+      text-align: center;
+    }
+
+    .lang-grid {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 3rem;
+    }
+
+    .lang-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .lang-card:hover { border-color: rgba(99,102,241,0.3); transform: translateY(-2px); }
+    .lang-icon { font-size: 1.5rem; }
+
+    /* CTA */
+    .cta {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      padding: 6rem 2rem;
+      text-align: center;
+      color: white;
+    }
+
+    .cta h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -0.02em; }
+    .cta p { font-size: 1rem; opacity: 0.8; margin-bottom: 2rem; }
+
+    .btn-white {
+      padding: 0.85rem 2rem;
+      background: white;
+      color: var(--accent);
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+
+    /* Footer */
+    footer {
+      background: #0f0f1a;
+      color: rgba(255,255,255,0.4);
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.83rem;
+    }
+
+    footer a { color: rgba(255,255,255,0.6); text-decoration: none; }
+    footer a:hover { color: white; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo">⚡ APIForge</div>
+    <div class="nav-links">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#how" class="nav-link">How it works</a>
+      <a href="#languages" class="nav-link">Languages</a>
+      <a href="generator.html" class="nav-cta">Start Building →</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    Powered by LLaMA 3.3 70B
+  </div>
+  <h1 class="hero-title">
+    Generate production-ready APIs<br>
+    <span class="gradient">from plain English</span>
+  </h1>
+  <p class="hero-subtitle">
+    Describe what you want to build. APIForge generates a complete, 
+    working REST API with routes, database setup, error handling and docs 
+    in seconds.
+  </p>
+  <div class="hero-actions">
+    <a href="generator.html" class="btn-primary">⚡ Generate your API</a>
+    <a href="#how" class="btn-secondary">See how it works</a>
+  </div>
+  <div class="hero-demo">
+    <div class="demo-bar">
+      <div class="demo-dot r"></div>
+      <div class="demo-dot y"></div>
+      <div class="demo-dot g"></div>
+      <span class="demo-title">generated_api.py</span>
+    </div>
+    <div class="demo-content">
+      <div class="demo-line"><span class="cm"># Generated by APIForge in 8 seconds</span></div>
+      <div class="demo-line"><span class="kw">from</span> fastapi <span class="kw">import</span> FastAPI, HTTPException</div>
+      <div class="demo-line"><span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel</div>
+      <div class="demo-line"><span class="kw">import</span> sqlite3</div>
+      <div class="demo-line"></div>
+      <div class="demo-line"><span class="dec">app</span> = <span class="fn">FastAPI</span>(<span class="dec">title</span>=<span class="str">"Bookstore API"</span>)</div>
+      <div class="demo-line"></div>
+      <div class="demo-line"><span class="dec">@app</span>.<span class="fn">get</span>(<span class="str">"/books"</span>)</div>
+      <div class="demo-line"><span class="kw">async def</span> <span class="fn">get_books</span>():</div>
+      <div class="demo-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm"># Returns all books from the database</span></div>
+      <div class="demo-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> { <span class="str">"books"</span>: books, <span class="str">"count"</span>: <span class="fn">len</span>(books) }</div>
+      <div class="demo-line"></div>
+      <div class="demo-line"><span class="dec">@app</span>.<span class="fn">post</span>(<span class="str">"/books"</span>)</div>
+      <div class="demo-line"><span class="kw">async def</span> <span class="fn">create_book</span>(book: BookModel):</div>
+      <div class="demo-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm"># Validates and saves new book to database</span></div>
+      <div class="demo-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> { <span class="str">"message"</span>: <span class="str">"Book created"</span>, <span class="str">"id"</span>: book_id }</div>
+    </div>
+  </div>
+</section>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num">5+</div><div class="stat-label">Languages supported</div></div>
+  <div class="stat"><div class="stat-num">&lt;10s</div><div class="stat-label">Average generation time</div></div>
+  <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Production ready code</div></div>
+  <div class="stat"><div class="stat-num">Free</div><div class="stat-label">No credit card needed</div></div>
+</div>
+
+<section class="features" id="features">
+  <div class="section-label">Features</div>
+  <h2 class="section-title">Everything you need to ship faster</h2>
+  <p class="section-subtitle">Stop writing boilerplate. Describe your API and get production ready code instantly.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon purple">⚡</div>
+      <div class="feature-title">Instant generation</div>
+      <div class="feature-desc">Get a complete, working API in under 10 seconds. Full CRUD operations, error handling and database setup included.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon cyan">🌐</div>
+      <div class="feature-title">Multi-language support</div>
+      <div class="feature-desc">Generate APIs in Python, JavaScript and Go with popular frameworks like FastAPI, Express and Gin.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon green">📋</div>
+      <div class="feature-title">Route visualization</div>
+      <div class="feature-desc">See a visual map of all your API routes and how they connect before you run a single line of code.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon orange">💾</div>
+      <div class="feature-title">One click download</div>
+      <div class="feature-desc">Download your generated API as a ready to run file. Just install dependencies and start your server.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon pink">📚</div>
+      <div class="feature-title">Setup instructions</div>
+      <div class="feature-desc">Every generated API comes with step by step setup instructions so you can run it in minutes.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon blue">🕐</div>
+      <div class="feature-title">Generation history</div>
+      <div class="feature-desc">Your last 10 generated APIs are saved locally so you can always come back and reference them.</div>
+    </div>
+  </div>
+</section>
+
+<section class="how" id="how">
+  <div class="how-inner">
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">Three steps to your API</h2>
+    <p class="section-subtitle">No configuration. No boilerplate. Just describe and generate.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Describe your API</div>
+        <div class="step-desc">Type what you want to build in plain English. Be as specific or as general as you like.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Pick your stack</div>
+        <div class="step-desc">Choose your language and framework. Python, JavaScript or Go with popular frameworks.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Get your API</div>
+        <div class="step-desc">Copy, download and run your production ready API with full database setup and error handling.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="languages" id="languages">
+  <div class="section-label">Languages</div>
+  <h2 class="section-title">Your stack, your choice</h2>
+  <p class="section-subtitle">Generate APIs in the language and framework you already know.</p>
+  <div class="lang-grid">
+    <div class="lang-card"><span class="lang-icon">🐍</span> Python + FastAPI</div>
+    <div class="lang-card"><span class="lang-icon">🐍</span> Python + Flask</div>
+    <div class="lang-card"><span class="lang-icon">🐍</span> Python + Django</div>
+    <div class="lang-card"><span class="lang-icon">🟨</span> JavaScript + Express</div>
+    <div class="lang-card"><span class="lang-icon">🟨</span> JavaScript + Fastify</div>
+    <div class="lang-card"><span class="lang-icon">🔵</span> Go + Gin</div>
+    <div class="lang-card"><span class="lang-icon">🔵</span> Go + Echo</div>
+  </div>
+</section>
+
+<section class="cta">
+  <h2>Ready to build faster?</h2>
+  <p>Generate your first production-ready API in under 10 seconds. Free forever.</p>
+  <a href="generator.html" class="btn-white">⚡ Start generating for free →</a>
+</section>
+
+<footer>
+  <p>Built by <a href="https://github.com/saipraneethp7">Sai Praneeth</a> · Powered by Groq and LLaMA 3.3 · <a href="generator.html">Launch app →</a></p>
+</footer>
+
+</body>
+</html>
